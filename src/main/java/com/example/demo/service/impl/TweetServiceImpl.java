@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.exception.TweetExcepction;
@@ -14,10 +15,12 @@ import com.example.demo.properties.Propiedades;
 import com.example.demo.repository.TweetRepository;
 import com.example.service.TweetService;
 
+import twitter4j.GeoLocation;
 import twitter4j.Status;
 import twitter4j.User;
 
 @Service
+@Component
 public class TweetServiceImpl implements TweetService {
 
 	@Autowired
@@ -99,8 +102,11 @@ public class TweetServiceImpl implements TweetService {
 						List<String> lenguaje = Propiedades.getIdiomas();
 						if (lenguaje.contains(status.getLang())) {
 
-							Tweet tweet = new Tweet(usuario.getId(), status.getGeoLocation().getLatitude(),
-									status.getGeoLocation().getLongitude(), false, status.getText());
+							GeoLocation geo = status.getGeoLocation();
+							
+							
+							Tweet tweet = new Tweet(usuario.getId(), geo != null ? geo.getLatitude() : null,
+									geo != null ? geo.getLongitude() : null, false, status.getText());
 
 							return tweetRepository.saveAndFlush(tweet);
 						}

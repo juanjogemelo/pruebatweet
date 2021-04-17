@@ -3,11 +3,11 @@ package com.example.demo.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,7 +15,6 @@ import com.example.demo.model.Tweet;
 import com.example.service.TweetService;
 
 import twitter4j.Status;
-import twitter4j.Trend;
 import twitter4j.Trends;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -48,7 +47,7 @@ public class TweetController {
 	/**
 	 * Permite validar tweets.
 	 * @param id del tweet que queremos validar.
-	 * @return
+	 * @return tweet validado.
 	 */
 	@GetMapping("/validartweet")
 	public Tweet validarTweet(@RequestParam(value="id", defaultValue = "-1") Long id){
@@ -72,24 +71,21 @@ public class TweetController {
 	
 	/**
 	 * Listado de hastag mas usados.
-	 * @param woeid id del lugar para obtener los mas usados. Por defecto es 1, todo el mundo 
+	 * @param limit id del lugar para obtener los mas usados. Por defecto es 1, todo el mundo 
 	 * @return lista de hastag mas usados.
 	 */
 	@GetMapping("/masusados")
-	public List<String> masUsados(@RequestParam(value = "woeid", defaultValue = "1") int woeid){
+	public List<String> masUsados(@RequestParam(value = "limit", defaultValue = "10") int limit){
         try {
         	
         	List<String> resultado = new ArrayList<String>();
         	
             Twitter twitter = new TwitterFactory().getInstance();
-            Trends trends = twitter.getPlaceTrends(woeid);
+            Trends trends = twitter.getPlaceTrends(1);
            
-            
-            
-            for (Trend trend : trends.getTrends()) {
-            	resultado.add(trend.getName());
-            }
-            
+            if (trends.getTrends() != null && trends.getTrends().length > 0)
+            	resultado.addAll(Arrays.stream(trends.getTrends()).map(x -> x.getName()).limit(limit).collect(Collectors.toList()));
+                       
             return resultado;
             
         } catch (TwitterException te) {
